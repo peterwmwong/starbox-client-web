@@ -1,0 +1,81 @@
+@import 'border'
+@import 'box'
+@import 'gradient'
+@import 'pos'
+@import 'transform'
+
+.Beverage
+  box-sizing border-box
+  padding 0 20px 10px 20px
+  color #DDD
+
+  > *
+    display inline-block
+    vertical-align middle
+
+  > .photo
+    margin-right 20px
+    margin-top 20px
+    transform 7deg
+    position relative
+
+    > .pin
+      pin-size = 20px
+      pin-color = #005958
+      abspos -9px false false 60px
+      width pin-size
+      height pin-size
+      border-radius 11px
+      background-color #F00
+      box-shadow 0px 1px 3px #333
+      border 1px solid darken(pin-color,50%)
+      gradient darken(pin-color,5%) darken(pin-color,50%)
+
+    > img
+      box-shadow 1px 5px 10px #181818
+      width 128px
+      height 128px
+      background-color white
+      border 5px solid white
+      border-bottom 15px solid white
+
+
+  > .name_price
+    line-height 30px
+    width 210px
+    word-wrap break-word
+
+    > .name
+      font-family 'Cabin Sketch'
+      font-weight bold
+      font-size 40px
+
+    > .price_drink
+      font-family 'Architects Daughter'
+      font-weight bold
+      font-size 28px
+      color #888
+
+      > *
+        display inline-block
+        box-sizing border-box
+
+      > .price
+        padding-left 10px
+        margin-top 10px
+        width 50%
+
+      > .drink
+        border-radius 5px
+        border 4px solid #666
+        color #888
+        font-size 14px
+        padding 2px 10px 0 10px
+        line-height 22px
+
+        &:hover
+          border-color white
+          color white
+          cursor pointer
+
+

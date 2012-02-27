@@ -1,0 +1,33 @@
+@import 'transform'
+
+
+.BeverageList
+  overflow hidden
+  position relative
+
+  > .beverage-container
+    display inline-block
+    width 50%
+
+    &:nth-child(2n+1)
+      float left
+      clear both
+
+      > .Beverage
+        float right
+
+      
+    &:nth-child(3n+1)
+      > .Beverage > .photo
+        transform -2deg
+
+      > .Beverage .drink
+        transform 3deg
+
+    &:nth-child(3n)
+      > .Beverage > .photo
+        transform -5deg
+
+      > .Beverage .drink
+        transform -4deg
+

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Starbox</title>
+<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<link href='src/bootstrap.css' rel='stylesheet'></link>
+<script src='src/bootstrap.js'></script>
+<script>
+  Backbone.sync = function(method, model, opts){
+    require(['mock-resource-loader/mock-resource-loader'], function(mdl){
+      (Backbone.sync = mdl.getSync())(method,model,opts);
+    });
+  };
+</script>
+</head>
+<body style='margin:0;padding:0;background-color:#222' data-cell='views/Store' data-cell-baseurl='src' data-cell-cachebust='true'>
+</body>
+</html>
