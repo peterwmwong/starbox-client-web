@@ -45,11 +45,13 @@ define(['mock-resource-loader/mock-resources'], function(resources) {
           _ref2 = _ref[_i], route = _ref2[0], handler_map = _ref2[1];
           if (!(m = route(url))) continue;
           if (handler = handler_map[method]) {
-            try {
-              opts.success(handler(m.id, opts));
-            } catch (e) {
-              opts.error(e);
-            }
+            setTimeout((function() {
+              try {
+                return opts.success(handler(m.id, JSON.parse(JSON.stringify(model.toJSON())), opts));
+              } catch (e) {
+                return opts.error(e);
+              }
+            }), 100);
           } else {
             err(opts);
           }

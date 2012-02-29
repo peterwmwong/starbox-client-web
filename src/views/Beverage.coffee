@@ -1,4 +1,4 @@
-define
+define ->
   render: (_)-> [
     _ '.photo',
       _ '.pin'
@@ -6,9 +6,10 @@ define
     _ '.name_price',
       _ '.name', @model.get 'name'
       _ '.price_drink',
-        _ '.price', "$#{@model.get 'price'}"
+        _ '.price', "$#{@model.get('price').toFixed(2)}"
         _ '.drink', 'drink now!'
   ]
 
   on:
-    'click .drink': -> @$el.trigger type: 'drinkRequest'
+    'click .drink': ->
+      @$el.trigger 'dispenseBeverage', [@model.id]

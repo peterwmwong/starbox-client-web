@@ -2,6 +2,10 @@ define -> ({mockModules,loadModule,getRequire})->
 
   describe '#getSync', ->
     describe 'creates a sync function (to override Backbone.sync)', ->
+      class MockModel
+        constructor: ({@url})->
+          @toJSON = sinon.stub().returns {}
+
       beforeEach ->
         loadModule {
           'mock-resource-loader/mock-resources':
@@ -22,50 +26,68 @@ define -> ({mockModules,loadModule,getRequire})->
         expect(@sync).toBe @mock_data_loader.getSync()
 
       it 'when called, should choose the appropriate resource handler', ->
-        @sync 'create', url: '/res1', {success: (->), error: (->)}
-        expect(@mock_res1_create.callCount).toBe 1
-        expect(@mock_res1_read.callCount).toBe 0
-        expect(@mock_res2_create.callCount).toBe 0
-        expect(@mock_res2_update.callCount).toBe 0
+        runs => @sync 'create', new MockModel(url: '/res1'), {success: (->), error: (->)}
+        waitsFor => @mock_res1_create.callCount is 1
+        runs =>
+          expect(@mock_res1_create.callCount).toBe 1
+          expect(@mock_res1_read.callCount).toBe 0
+          expect(@mock_res2_create.callCount).toBe 0
+          expect(@mock_res2_update.callCount).toBe 0
 
-        @sync 'update', url: '/res2', {success: (->), error: (->)}
-        expect(@mock_res1_create.callCount).toBe 1
-        expect(@mock_res1_read.callCount).toBe 0
-        expect(@mock_res2_create.callCount).toBe 0
-        expect(@mock_res2_update.callCount).toBe 1
+        runs => @sync 'update', new MockModel(url: '/res2'), {success: (->), error: (->)}
+        waitsFor => @mock_res2_update.callCount
+        runs =>
+          expect(@mock_res1_create.callCount).toBe 1
+          expect(@mock_res1_read.callCount).toBe 0
+          expect(@mock_res2_create.callCount).toBe 0
+          expect(@mock_res2_update.callCount).toBe 1
 
-      it 'when called, should pass the id and options', ->
-        @sync 'read', (mock_model = url: '/res1/mock_id'), (mock_opts = {success: (->), error: (->)})
-        expect(@mock_res1_read.callCount).toBe 1
-        expect(@mock_res1_read.calledWith 'mock_id', mock_opts).toBe true
+      it 'when called, should pass the id, model.toJSON() and options', ->
+        runs => @sync 'read', (@mockModel = new MockModel(url: '/res1/mock_id')), (@mock_opts = {success: (->), error: (->)})
+        waitsFor => @mock_res1_read.callCount
+        runs =>
+          expect(@mockModel.toJSON.callCount).toBe 1
+          expect(@mock_res1_read.callCount).toBe 1
+          expect(@mock_res1_read.calledWith 'mock_id', @mockModel.toJSON.getCall(0).returnValue, @mock_opts).toBe true
 
-      it 'when called, should pass the options (id is undefined if none supplied in url)', ->
-        @sync 'read', (mock_model = url: '/res1'), (mock_opts = {success: (->), error: (->)})
-        expect(@mock_res1_read.callCount).toBe 1
-        expect(@mock_res1_read.calledWith undefined, mock_opts).toBe true
+      it 'when called, should pass the undefined (id not specified), model.toJSON() and options ', ->
+        runs => @sync 'read', (@mockModel = new MockModel(url: '/res1')), (@mock_opts = {success: (->), error: (->)})
+        waitsFor => @mock_res1_read.callCount
+        runs =>
+          expect(@mockModel.toJSON.callCount).toBe 1
+          expect(@mock_res1_read.callCount).toBe 1
+          expect(@mock_res1_read.calledWith undefined, @mockModel.toJSON.getCall(0).returnValue, @mock_opts).toBe true
 
       it 'when called, should call opts.success with resource handler result', ->
-        @sync 'create', url: '/res1', {success: mock_success = sinon.stub(), error: mock_error = sinon.stub()}
-        expect(mock_error.called).toBe false
-        expect(mock_success.calledOnce).toBe true
-        expect(mock_success.getCall(0).args[0]).toEqual @mock_res1_create_return
+        runs => @sync 'create', (@mock_model = new MockModel(url: '/res1')), {success: @mock_success = sinon.stub(), error: @mock_error = sinon.stub()}
+        waitsFor => @mock_success.calledOnce
+        runs =>
+          expect(@mock_error.called).toBe false
+          expect(@mock_success.calledOnce).toBe true
+          expect(@mock_success.getCall(0).args[0]).toEqual @mock_res1_create_return
 
       it "when called with a url that doesn't map to a resource handler, calls opts.error", ->
-        @sync 'create', url: '/bogus_url', {success: mock_success = sinon.stub(), error: mock_error = sinon.stub()}
-        expect(mock_success.called).toBe false
-        expect(mock_error.calledOnce).toBe true
-        expect(mock_error.getCall(0).args[0]).toBe "Couldn't find mock resource handler"
+        runs => @sync 'create', (@mock_model = new MockModel(url: '/bogus_url')), {success: @mock_success = sinon.stub(), error: @mock_error = sinon.stub()}
+        waitsFor => @mock_error.calledOnce
+        runs =>
+          expect(@mock_success.called).toBe false
+          expect(@mock_error.calledOnce).toBe true
+          expect(@mock_error.getCall(0).args[0]).toBe "Couldn't find mock resource handler"
 
       it "when called with a url maps to a resource handler, BUT handler can't handle method, calls opts.error", ->
-        @sync 'update', url: '/res1', {success: mock_success = sinon.stub(), error: mock_error = sinon.stub()}
-        expect(mock_success.called).toBe false
-        expect(mock_error.calledOnce).toBe true
-        expect(mock_error.getCall(0).args[0]).toBe "Couldn't find mock resource handler"
+        runs => @sync 'update', (mock_model = new MockModel(url: '/res1')), {success: @mock_success = sinon.stub(), error: @mock_error = sinon.stub()}
+        waitsFor => @mock_error.calledOnce
+        runs =>
+          expect(@mock_success.called).toBe false
+          expect(@mock_error.calledOnce).toBe true
+          expect(@mock_error.getCall(0).args[0]).toBe "Couldn't find mock resource handler"
 
       it "when called and resource handler throws error, calls opts.error", ->
-        @sync 'create', url: '/res2', {success: mock_success = sinon.stub(), error: mock_error = sinon.stub()}
-        expect(mock_success.called).toBe false
-        expect(mock_error.calledOnce).toBe true
+        runs => @sync 'create', (mock_model = new MockModel(url: '/res2')), {success: @mock_success = sinon.stub(), error: @mock_error = sinon.stub()}
+        waitsFor => @mock_error.calledOnce
+        runs =>
+          expect(@mock_success.called).toBe false
+          expect(@mock_error.calledOnce).toBe true
 
 
   describe '#_getResourceRoutes', ->

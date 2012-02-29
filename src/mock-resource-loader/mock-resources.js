@@ -1,7 +1,7 @@
 
 define(function() {
-  var make_beverage, _beverages, _ingredient_prices;
-  _ingredient_prices = {
+  var k, make_beverage, v, _beverages, _ingredients, _stock;
+  _ingredients = {
     Cocoa: 0.90,
     Coffee: 0.75,
     Cream: 0.25,
@@ -12,21 +12,32 @@ define(function() {
     Sugar: 0.25,
     'Whipped Cream': 1.00
   };
-  make_beverage = function(name, img, _ingredient_map) {
-    return {
-      img_url: "src/views/beverage_images/" + img,
-      name: name,
-      price: (function() {
-        var ingr, price, units;
-        price = 0.0;
-        for (ingr in _ingredient_map) {
-          units = _ingredient_map[ingr];
-          price += _ingredient_prices[ingr] * units;
-        }
-        return price = Math.round(price * 100) / 100;
-      })()
+  _stock = {};
+  for (k in _ingredients) {
+    v = _ingredients[k];
+    _stock[k] = 25;
+  }
+  make_beverage = (function() {
+    var id;
+    id = 0;
+    return function(name, img, _ingredient_map) {
+      return {
+        id: id++,
+        img_url: "src/views/beverage_images/" + img,
+        name: name,
+        ingredients: _ingredient_map,
+        price: (function() {
+          var ingr, price, units;
+          price = 0.0;
+          for (ingr in _ingredient_map) {
+            units = _ingredient_map[ingr];
+            price += _ingredients[ingr] * units;
+          }
+          return price = Math.round(price * 100) / 100;
+        })()
+      };
     };
-  };
+  })();
   _beverages = [
     make_beverage('Café Americano', 'caffe_americano.PNG', {
       Espresso: 3
@@ -54,18 +65,58 @@ define(function() {
   ];
   return {
     beverages: {
-      create: function(id, opts) {},
-      read: function(id, opts) {
+      read: function(id, data) {
         return !(id != null) && _beverages || _beverages[id];
       },
-      update: function(id, opts) {},
-      "delete": function(id, opts) {}
+      update: function(id, data) {}
     },
     ingredients: {
-      create: function(id, opts) {},
-      read: function(id, opts) {},
-      update: function(id, opts) {},
-      "delete": function(id, opts) {}
-    }
+      read: function(id, data) {},
+      update: function(id, data) {}
+    },
+    transactions: (function() {
+      var inprogress;
+      inprogress = {};
+      return {
+        create: function(id, data) {
+          var bev, ingr, units, _ref;
+          switch (data.type) {
+            case 'dispense_beverage':
+              bev = _beverages[data.beverage_id];
+              console.log("dispense_beverage " + data.beverage_id + " : " + bev.name);
+              _ref = bev.ingredients;
+              for (ingr in _ref) {
+                units = _ref[ingr];
+                if (_stock[ingr] >= units) {
+                  _stock[ingr] -= units;
+                } else {
+                  return {
+                    error: "Not enough " + ingr + " to make beverage"
+                  };
+                }
+              }
+              inprogress[id = Math.round(1000 * Math.random())] = Date.now();
+              return {
+                id: id
+              };
+          }
+        },
+        read: function(id, data) {
+          var isDone, start;
+          isDone = true;
+          if (id && (start = inprogress[Number(id)])) {
+            if (start + 2000 < Date.now()) {
+              delete inprogress[Number(id)];
+            } else {
+              isDone = false;
+            }
+          }
+          return {
+            id: id,
+            isDone: isDone
+          };
+        }
+      };
+    })()
   };
 });

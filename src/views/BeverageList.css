@@ -1,5 +1,5 @@
 .BeverageList{overflow:hidden;position:relative;}
-.BeverageList > .beverage-container{display:inline-block;width:50%;}
+.BeverageList > .beverage-container{display:inline-block;width:50%;margin-top:1.8%;}
 .BeverageList > .beverage-container:nth-child(2n+1){float:left;clear:both;}
 .BeverageList > .beverage-container:nth-child(2n+1) > .Beverage{float:right}
 .BeverageList > .beverage-container:nth-child(3n+1) > .Beverage > .photo{transform:rotate(-2deg);-ms-transform:rotate(-2deg);-moz-transform:rotate(-2deg);-webkit-transform:rotate(-2deg);-o-transform:rotate(-2deg);}

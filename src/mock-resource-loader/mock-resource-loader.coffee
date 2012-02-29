@@ -23,10 +23,14 @@ define ['mock-resource-loader/mock-resources'], (resources)->
         url = (typeof model.url is 'function') and model.url() or model.url
         for [route, handler_map] in module._getResourceRoutes() when m = route url
           if handler = handler_map[method]
-            try
-              opts.success handler m.id, opts
-            catch e
-              opts.error e
+            setTimeout ( ->
+              try
+                # Really make sure nothing we're not dependent on some
+                # secret statefull javascript object
+                opts.success handler m.id, JSON.parse(JSON.stringify(model.toJSON())), opts
+              catch e
+                opts.error e
+            ), 100
           else
             err opts
           return
